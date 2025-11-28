@@ -39,6 +39,7 @@ jobs:
           port: 2222
           script: |
             rm -rf /home.sproutify.app/*
+            rm -rf /home.sproutify.app/.*
 
       - name: Deploy to IONOS via SFTP
         uses: Dylan700/sftp-upload-action@v1.2.3
@@ -49,4 +50,30 @@ jobs:
           port: 2222
           uploads: |
             ./dist/ => /home.sproutify.app/
+
+      - name: Set file permissions
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IONOS_HOST }}
+          username: ${{ secrets.IONOS_USERNAME }}
+          password: ${{ secrets.IONOS_PASSWORD }}
+          port: 2222
+          script: |
+            chmod -R 755 /home.sproutify.app/
+            find /home.sproutify.app/ -type f -exec chmod 644 {} \;
+            find /home.sproutify.app/ -type d -exec chmod 755 {} \;
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IONOS_HOST }}
+          username: ${{ secrets.IONOS_USERNAME }}
+          password: ${{ secrets.IONOS_PASSWORD }}
+          port: 2222
+          script: |
+            echo "Deployed files:"
+            ls -la /home.sproutify.app/
+            echo ""
+            echo "Checking for index.html:"
+            ls -la /home.sproutify.app/index.html || echo "index.html not found!"
 
