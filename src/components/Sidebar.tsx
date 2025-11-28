@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Leaf, MessageSquare, Bell, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Leaf, MessageSquare, Bell, Settings, LogOut, UserPlus } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/authContextBase';
@@ -12,6 +12,7 @@ const navItems = [
   { icon: Leaf, label: 'Content', to: '/content' },
   { icon: MessageSquare, label: 'Challenges', to: '/challenges' },
   { icon: Bell, label: 'Notifications', to: '/notifications' },
+  { icon: UserPlus, label: 'Community Signups', to: '/community-signups' },
   { icon: Settings, label: 'Settings', to: '/settings' },
 ];
 

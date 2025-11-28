@@ -8,6 +8,7 @@ import { Challenges } from './pages/Challenges';
 import { Notifications } from './pages/Notifications';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
+import { CommunitySignups } from './pages/CommunitySignups';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/authContextBase';
 import { TeamAdminProvider } from './contexts/TeamAdminContext';
@@ -102,6 +103,7 @@ function AuthGate() {
           <Route path="content" element={<Content />} />
           <Route path="challenges" element={<Challenges />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="community-signups" element={<CommunitySignups />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
