@@ -91,7 +91,9 @@ jobs:
           port: 2222
           script: |
             # Try multiple possible paths
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
             elif [ -d ~/httpdocs ]; then
               cd ~/httpdocs
@@ -99,6 +101,8 @@ jobs:
               cd /httpdocs
             else
               echo "ERROR: httpdocs directory not found"
+              echo "Checking available paths:"
+              ls -la /var/www/vhosts/sweetwaterurbanfarms.com/ 2>/dev/null || true
               exit 1
             fi
             echo "Cleaning directory: $(pwd)"
@@ -114,7 +118,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs/
+            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -124,7 +128,9 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
             elif [ -d ~/httpdocs ]; then
               cd ~/httpdocs
@@ -150,7 +156,10 @@ jobs:
           script: |
             echo "Home directory: $(cd ~ && pwd)"
             echo ""
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+              echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ($(pwd))"
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
               echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ($(pwd))"
             elif [ -d ~/httpdocs ]; then
@@ -161,6 +170,8 @@ jobs:
               echo "Using: /httpdocs ($(pwd))"
             else
               echo "Error: httpdocs not found"
+              echo "Checking available paths:"
+              ls -la /var/www/vhosts/sweetwaterurbanfarms.com/ 2>/dev/null || true
               exit 1
             fi
             echo ""
