@@ -11,7 +11,6 @@ import {
   Search as SearchIcon,
   Trash2,
   Users as UsersIcon,
-  X,
   Mail,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -655,7 +654,7 @@ export function Users() {
     if (!userToDelete || !userToDelete.email) return;
 
     try {
-      const { data, error } = await supabase.rpc('delete_user_by_email', {
+      const { error } = await supabase.rpc('delete_user_by_email', {
         target_email: userToDelete.email,
       });
 
