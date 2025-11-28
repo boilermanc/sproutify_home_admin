@@ -101,13 +101,17 @@ export function CommunitySignups() {
     setError(null);
     try {
       // Use type assertion to bypass type checking for table not in type definitions
-      const query = (supabase as any).from('community_signups');
-      const { data, error: queryError } = await query
-        .select('*')
+      // Explicitly select columns to ensure correct data structure
+      const { data, error: queryError } = await (supabase as any)
+        .from('community_signups')
+        .select('id, first_name, email, inserted_at')
         .order('inserted_at', { ascending: false });
       
       if (queryError) {
         console.error('Supabase query error:', queryError);
+        console.error('Error code:', queryError.code);
+        console.error('Error message:', queryError.message);
+        console.error('Error details:', queryError.details);
         throw queryError;
       }
       
@@ -115,8 +119,17 @@ export function CommunitySignups() {
       console.log('Number of signups:', data?.length ?? 0);
       
       if (data && Array.isArray(data)) {
-        setSignups(data as CommunitySignup[]);
+        // Validate and map the data to ensure it matches our interface
+        const mappedData = data.map((item: any) => ({
+          id: item.id || '',
+          first_name: item.first_name || '',
+          email: item.email || '',
+          inserted_at: item.inserted_at || new Date().toISOString(),
+        }));
+        console.log('Mapped signups:', mappedData);
+        setSignups(mappedData as CommunitySignup[]);
       } else {
+        console.warn('Data is not an array:', data);
         setSignups([]);
       }
     } catch (err) {
