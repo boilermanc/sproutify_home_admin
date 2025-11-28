@@ -30,6 +30,9 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
 
+      - name: Copy .htaccess to dist
+        run: cp public/.htaccess dist/.htaccess || echo ".htaccess not found in public, skipping"
+
       - name: Find httpdocs path
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -113,4 +116,7 @@ jobs:
             echo ""
             echo "Checking for index.html:"
             ls -la index.html || echo "index.html not found!"
+            echo ""
+            echo "Checking for .htaccess:"
+            ls -la .htaccess || echo ".htaccess not found!"
 
