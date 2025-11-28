@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "postbuild": "cp public/.htaccess dist/.htaccess 2>/dev/null || copy public\\.htaccess dist\\.htaccess 2>nul || true",
     "lint": "eslint .",
     "preview": "vite preview"
   },
