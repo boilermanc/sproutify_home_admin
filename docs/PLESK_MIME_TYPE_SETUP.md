@@ -33,19 +33,22 @@ If you're using Nginx, you need to add custom directives:
 5. Add the following configuration:
 
 ```nginx
-# Set correct MIME types for JavaScript modules
+# Set correct MIME types for JavaScript modules (force override)
 location ~* \.(js|mjs)$ {
-    add_header Content-Type application/javascript;
+    default_type application/javascript;
+    add_header Content-Type application/javascript always;
 }
 
 # Set correct MIME types for CSS
 location ~* \.css$ {
-    add_header Content-Type text/css;
+    default_type text/css;
+    add_header Content-Type text/css always;
 }
 
 # Set correct MIME types for SVG
 location ~* \.svg$ {
-    add_header Content-Type image/svg+xml;
+    default_type image/svg+xml;
+    add_header Content-Type image/svg+xml always;
 }
 ```
 

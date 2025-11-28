@@ -1,10 +1,23 @@
 # Set correct MIME types for JavaScript modules
-<IfModule mod_mime.c>
-    AddType application/javascript .js
-    AddType application/javascript .mjs
-    AddType text/css .css
-    AddType image/svg+xml .svg
-</IfModule>
+# Force MIME types even if mod_mime is not available
+AddType application/javascript .js
+AddType application/javascript .mjs
+AddType text/javascript .js
+AddType text/css .css
+AddType image/svg+xml .svg
+
+# Alternative method using FilesMatch
+<FilesMatch "\.(js|mjs)$">
+    ForceType application/javascript
+</FilesMatch>
+
+<FilesMatch "\.css$">
+    ForceType text/css
+</FilesMatch>
+
+<FilesMatch "\.svg$">
+    ForceType image/svg+xml
+</FilesMatch>
 
 # Enable CORS for module scripts (if needed)
 <IfModule mod_headers.c>
