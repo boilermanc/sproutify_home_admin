@@ -33,6 +33,17 @@ jobs:
       - name: Copy .htaccess to dist
         run: cp public/.htaccess dist/.htaccess || echo ".htaccess not found in public, skipping"
 
+      - name: List dist contents before upload
+        run: |
+          echo "=== Contents of dist directory ==="
+          ls -la dist/
+          echo ""
+          echo "=== Contents of dist/assets ==="
+          ls -la dist/assets/ || echo "No assets directory"
+          echo ""
+          echo "=== Checking for index.html ==="
+          ls -la dist/index.html || echo "ERROR: index.html not found in dist!"
+
       - name: Verify build output
         run: |
           echo "=== Build verification ==="
@@ -128,10 +139,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/index.html => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/index.html
-            ./dist/assets/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/assets/
-            ./dist/.htaccess => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/.htaccess
-            ./dist/vite.svg => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/vite.svg
+            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
