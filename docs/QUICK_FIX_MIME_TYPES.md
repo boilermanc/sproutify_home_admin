@@ -18,21 +18,39 @@ Failed to load module script: Expected a JavaScript-or-Wasm module script but th
 3. **Paste this exact configuration:**
 
 ```nginx
-location ~* \.(js|mjs)$ {
-    default_type application/javascript;
-    add_header Content-Type application/javascript always;
+# Force correct MIME types for JS and CSS
+location ~* \.js$ {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "application/javascript" always;
+	try_files $uri =404;
+}
+
+location ~* \.mjs$ {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "application/javascript" always;
+	try_files $uri =404;
 }
 
 location ~* \.css$ {
-    default_type text/css;
-    add_header Content-Type text/css always;
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "text/css" always;
+	try_files $uri =404;
 }
 
 location ~* \.svg$ {
-    default_type image/svg+xml;
-    add_header Content-Type image/svg+xml always;
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "image/svg+xml" always;
+	try_files $uri =404;
+}
+
+# SPA routing: serve index.html for all routes
+location / {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	try_files $uri $uri/ /index.html;
 }
 ```
+
+**Note:** If your domain path is different, replace `/var/www/vhosts/home.sproutify.app/httpdocs` with your actual path. You can find it in Plesk under **Files** or check the **Document Root** setting.
 
 4. Click **OK** or **Apply** to save
 5. Wait 1-2 minutes for the changes to propagate

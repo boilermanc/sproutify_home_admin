@@ -33,24 +33,39 @@ If you're using Nginx, you need to add custom directives:
 5. Add the following configuration:
 
 ```nginx
-# Set correct MIME types for JavaScript modules (force override)
-location ~* \.(js|mjs)$ {
-    default_type application/javascript;
-    add_header Content-Type application/javascript always;
+# Force correct MIME types for JS and CSS
+location ~* \.js$ {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "application/javascript" always;
+	try_files $uri =404;
 }
 
-# Set correct MIME types for CSS
+location ~* \.mjs$ {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "application/javascript" always;
+	try_files $uri =404;
+}
+
 location ~* \.css$ {
-    default_type text/css;
-    add_header Content-Type text/css always;
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "text/css" always;
+	try_files $uri =404;
 }
 
-# Set correct MIME types for SVG
 location ~* \.svg$ {
-    default_type image/svg+xml;
-    add_header Content-Type image/svg+xml always;
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	add_header Content-Type "image/svg+xml" always;
+	try_files $uri =404;
+}
+
+# SPA routing: serve index.html for all routes
+location / {
+	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	try_files $uri $uri/ /index.html;
 }
 ```
+
+**Important:** Replace `/var/www/vhosts/home.sproutify.app/httpdocs` with your actual document root path if it's different. You can find this in Plesk under your domain's **Hosting Settings** or **Files** section.
 
 6. Click **OK** to save
 7. The changes will apply automatically
