@@ -18,34 +18,35 @@ Failed to load module script: Expected a JavaScript-or-Wasm module script but th
 3. **Paste this exact configuration:**
 
 ```nginx
-# Force correct MIME types for JS and CSS
-location ~* \.js$ {
-	root /var/www/vhosts/home.sproutify.app/httpdocs;
+# CRITICAL: Serve assets directory first (before SPA routing)
+location /assets/ {
+	root /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs;
 	add_header Content-Type "application/javascript" always;
 	try_files $uri =404;
 }
 
-location ~* \.mjs$ {
-	root /var/www/vhosts/home.sproutify.app/httpdocs;
+# Force correct MIME types for JS and CSS files
+location ~* \.(js|mjs)$ {
+	root /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs;
 	add_header Content-Type "application/javascript" always;
 	try_files $uri =404;
 }
 
 location ~* \.css$ {
-	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	root /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs;
 	add_header Content-Type "text/css" always;
 	try_files $uri =404;
 }
 
 location ~* \.svg$ {
-	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	root /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs;
 	add_header Content-Type "image/svg+xml" always;
 	try_files $uri =404;
 }
 
 # Optional: Cache control for index.html
 location = /index.html {
-	root /var/www/vhosts/home.sproutify.app/httpdocs;
+	root /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs;
 	add_header Cache-Control "no-cache, no-store, must-revalidate" always;
 	add_header Pragma "no-cache" always;
 	add_header Expires 0 always;
