@@ -87,6 +87,7 @@ const SortableHeader = ({ label, field, currentSort, onSort }: SortableHeaderPro
 export function CommunitySignups() {
   const [signups, setSignups] = useState<CommunitySignup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortState>({ field: 'inserted_at', direction: 'desc' });
   const [page, setPage] = useState(1);
@@ -97,16 +98,32 @@ export function CommunitySignups() {
 
   const fetchSignups = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await (supabase as any)
-        .from('community_signups')
+      // Use type assertion to bypass type checking for table not in type definitions
+      const query = (supabase as any).from('community_signups');
+      const { data, error: queryError } = await query
         .select('*')
         .order('inserted_at', { ascending: false });
       
-      if (error) throw error;
-      setSignups((data ?? []) as CommunitySignup[]);
-    } catch (error) {
-      console.error('Error fetching community signups:', error);
+      if (queryError) {
+        console.error('Supabase query error:', queryError);
+        throw queryError;
+      }
+      
+      console.log('Fetched community signups:', data);
+      console.log('Number of signups:', data?.length ?? 0);
+      
+      if (data && Array.isArray(data)) {
+        setSignups(data as CommunitySignup[]);
+      } else {
+        setSignups([]);
+      }
+    } catch (err) {
+      console.error('Error fetching community signups:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load community signups';
+      setError(errorMessage);
+      setSignups([]);
     } finally {
       setLoading(false);
     }
@@ -214,6 +231,26 @@ export function CommunitySignups() {
 
   return (
     <div className="space-y-6">
+      {/* Error Display */}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                <UserPlus className="h-5 w-5 text-red-600" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-red-900">Error Loading Signups</p>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={fetchSignups}>
+                <RefreshCcw className="h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-3">
