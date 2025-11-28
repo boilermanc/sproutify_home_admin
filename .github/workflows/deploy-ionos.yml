@@ -128,7 +128,10 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/
+            ./dist/index.html => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/index.html
+            ./dist/assets/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/assets/
+            ./dist/.htaccess => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/.htaccess
+            ./dist/vite.svg => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/vite.svg
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -198,10 +201,19 @@ jobs:
             echo ""
             echo "=== Checking assets directory ==="
             if [ -d assets ]; then
-              echo "assets directory exists"
+              echo "✓ assets directory exists"
+              echo "Files in assets directory:"
               ls -la assets/
+              echo ""
+              echo "Checking for expected JS file:"
+              ls -la assets/index-*.js || echo "WARNING: No index-*.js files found!"
+              echo ""
+              echo "Checking for expected CSS file:"
+              ls -la assets/index-*.css || echo "WARNING: No index-*.css files found!"
             else
               echo "ERROR: assets directory not found!"
+              echo "Current directory contents:"
+              ls -la
               exit 1
             fi
             echo ""
