@@ -33,6 +33,25 @@ jobs:
       - name: Copy .htaccess to dist
         run: cp public/.htaccess dist/.htaccess || echo ".htaccess not found in public, skipping"
 
+      - name: Verify build output
+        run: |
+          echo "=== Build verification ==="
+          echo "Checking dist/index.html:"
+          head -15 dist/index.html
+          echo ""
+          echo "Checking dist/assets:"
+          ls -la dist/assets/ || echo "No assets directory!"
+          echo ""
+          echo "Verifying index.html references compiled JS:"
+          if grep -q "/assets/index-" dist/index.html; then
+            echo "✓ index.html correctly references compiled assets"
+          else
+            echo "✗ ERROR: index.html does not reference compiled assets!"
+            echo "Full content:"
+            cat dist/index.html
+            exit 1
+          fi
+
       - name: Find httpdocs path
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -111,12 +130,37 @@ jobs:
               exit 1
             fi
             echo ""
-            echo "Deployed files:"
+            echo "=== Deployed files ==="
             ls -la
             echo ""
-            echo "Checking for index.html:"
-            ls -la index.html || echo "index.html not found!"
+            echo "=== Checking for index.html ==="
+            if [ -f index.html ]; then
+              echo "index.html exists"
+              echo "First 20 lines of index.html:"
+              head -20 index.html
+            else
+              echo "ERROR: index.html not found!"
+              exit 1
+            fi
             echo ""
-            echo "Checking for .htaccess:"
-            ls -la .htaccess || echo ".htaccess not found!"
+            echo "=== Checking assets directory ==="
+            if [ -d assets ]; then
+              echo "assets directory exists"
+              ls -la assets/
+            else
+              echo "ERROR: assets directory not found!"
+              exit 1
+            fi
+            echo ""
+            echo "=== Checking for .htaccess ==="
+            ls -la .htaccess || echo ".htaccess not found (optional)"
+            echo ""
+            echo "=== Verifying index.html references ==="
+            if grep -q "/assets/index-" index.html; then
+              echo "✓ index.html correctly references assets"
+            else
+              echo "✗ WARNING: index.html does not reference assets correctly"
+              echo "Content:"
+              cat index.html
+            fi
 
