@@ -53,6 +53,7 @@ jobs:
           fi
 
       - name: Find httpdocs path
+        id: find_path
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.IONOS_HOST }}
@@ -61,18 +62,25 @@ jobs:
           port: 2222
           script: |
             echo "Checking for httpdocs directory..."
+            HTTPDOCS_PATH=""
             if [ -d ~/httpdocs ]; then
               HTTPDOCS_PATH=$(cd ~/httpdocs && pwd)
+              echo "Found: $HTTPDOCS_PATH"
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+              HTTPDOCS_PATH=/var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
               echo "Found: $HTTPDOCS_PATH"
             elif [ -d /httpdocs ]; then
               HTTPDOCS_PATH=/httpdocs
               echo "Found: $HTTPDOCS_PATH"
             else
-              echo "httpdocs not found. Home directory contents:"
-              ls -la ~
+              echo "httpdocs not found. Checking common locations:"
+              ls -la ~/ 2>/dev/null || true
+              ls -la /var/www/vhosts/ 2>/dev/null || true
               echo "Please check the correct path and update the workflow"
               exit 1
             fi
+            echo "HTTPDOCS_PATH=$HTTPDOCS_PATH" >> $GITHUB_OUTPUT
+            echo "Using path: $HTTPDOCS_PATH"
 
       - name: Clean IONOS directory
         uses: appleboy/ssh-action@v1.2.0
@@ -82,9 +90,21 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            cd ~/httpdocs 2>/dev/null || cd /httpdocs 2>/dev/null || { echo "httpdocs directory not found"; exit 1; }
+            # Try multiple possible paths
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
+            elif [ -d ~/httpdocs ]; then
+              cd ~/httpdocs
+            elif [ -d /httpdocs ]; then
+              cd /httpdocs
+            else
+              echo "ERROR: httpdocs directory not found"
+              exit 1
+            fi
+            echo "Cleaning directory: $(pwd)"
             rm -rf ./*
             rm -rf ./.* 2>/dev/null || true
+            echo "Directory cleaned"
 
       - name: Deploy to IONOS via SFTP
         uses: Dylan700/sftp-upload-action@v1.2.3
@@ -94,7 +114,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => ~/httpdocs/
+            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -104,10 +124,21 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            cd ~/httpdocs || cd /httpdocs || exit 1
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
+            elif [ -d ~/httpdocs ]; then
+              cd ~/httpdocs
+            elif [ -d /httpdocs ]; then
+              cd /httpdocs
+            else
+              echo "ERROR: httpdocs directory not found"
+              exit 1
+            fi
+            echo "Setting permissions in: $(pwd)"
             chmod -R 755 .
             find . -type f -exec chmod 644 {} \;
             find . -type d -exec chmod 755 {} \;
+            echo "Permissions set"
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.2.0
@@ -119,7 +150,10 @@ jobs:
           script: |
             echo "Home directory: $(cd ~ && pwd)"
             echo ""
-            if [ -d ~/httpdocs ]; then
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
+              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
+              echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ($(pwd))"
+            elif [ -d ~/httpdocs ]; then
               cd ~/httpdocs
               echo "Using: ~/httpdocs ($(pwd))"
             elif [ -d /httpdocs ]; then
