@@ -30,6 +30,28 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
 
+      - name: Find httpdocs path
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IONOS_HOST }}
+          username: ${{ secrets.IONOS_USERNAME }}
+          password: ${{ secrets.IONOS_PASSWORD }}
+          port: 2222
+          script: |
+            echo "Checking for httpdocs directory..."
+            if [ -d ~/httpdocs ]; then
+              HTTPDOCS_PATH=$(cd ~/httpdocs && pwd)
+              echo "Found: $HTTPDOCS_PATH"
+            elif [ -d /httpdocs ]; then
+              HTTPDOCS_PATH=/httpdocs
+              echo "Found: $HTTPDOCS_PATH"
+            else
+              echo "httpdocs not found. Home directory contents:"
+              ls -la ~
+              echo "Please check the correct path and update the workflow"
+              exit 1
+            fi
+
       - name: Clean IONOS directory
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -38,8 +60,9 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            rm -rf /httpdocs/*
-            rm -rf /httpdocs/.*
+            cd ~/httpdocs 2>/dev/null || cd /httpdocs 2>/dev/null || { echo "httpdocs directory not found"; exit 1; }
+            rm -rf ./*
+            rm -rf ./.* 2>/dev/null || true
 
       - name: Deploy to IONOS via SFTP
         uses: Dylan700/sftp-upload-action@v1.2.3
@@ -49,7 +72,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /httpdocs/
+            ./dist/ => ~/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -59,9 +82,10 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            chmod -R 755 /httpdocs/
-            find /httpdocs/ -type f -exec chmod 644 {} \;
-            find /httpdocs/ -type d -exec chmod 755 {} \;
+            cd ~/httpdocs || cd /httpdocs || exit 1
+            chmod -R 755 .
+            find . -type f -exec chmod 644 {} \;
+            find . -type d -exec chmod 755 {} \;
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.2.0
@@ -71,9 +95,22 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
+            echo "Home directory: $(cd ~ && pwd)"
+            echo ""
+            if [ -d ~/httpdocs ]; then
+              cd ~/httpdocs
+              echo "Using: ~/httpdocs ($(pwd))"
+            elif [ -d /httpdocs ]; then
+              cd /httpdocs
+              echo "Using: /httpdocs ($(pwd))"
+            else
+              echo "Error: httpdocs not found"
+              exit 1
+            fi
+            echo ""
             echo "Deployed files:"
-            ls -la /httpdocs/
+            ls -la
             echo ""
             echo "Checking for index.html:"
-            ls -la /httpdocs/index.html || echo "index.html not found!"
+            ls -la index.html || echo "index.html not found!"
 
