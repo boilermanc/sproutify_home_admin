@@ -100,6 +100,10 @@ export function CommunitySignups() {
     setLoading(true);
     setError(null);
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session?.user?.email);
+      
       // Use type assertion to bypass type checking for table not in type definitions
       // Explicitly select columns to ensure correct data structure
       const { data, error: queryError } = await (supabase as any)
@@ -116,7 +120,15 @@ export function CommunitySignups() {
       }
       
       console.log('Fetched community signups:', data);
-      console.log('Number of signups:', data?.length ?? 0);
+      console.log('Number of signups returned:', data?.length ?? 0);
+      
+      // If query succeeds but returns empty array, it's likely an RLS issue
+      if (!data || data.length === 0) {
+        console.warn('⚠️ Query returned empty array but no error. This is likely an RLS (Row Level Security) policy issue.');
+        console.warn('💡 The table exists and the query works, but RLS policies are blocking access.');
+        console.warn('💡 Solution: Run the SQL in docs/community_signups_rls_policy.sql to create the necessary RLS policy.');
+        setError('No data returned. This is likely an RLS policy issue. Check console for details.');
+      }
       
       if (data && Array.isArray(data)) {
         // Validate and map the data to ensure it matches our interface
