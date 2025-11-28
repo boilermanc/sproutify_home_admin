@@ -118,7 +118,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/
+            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
