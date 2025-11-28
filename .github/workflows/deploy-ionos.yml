@@ -102,11 +102,11 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            # Use the path found in previous step, or check for home.sproutify.app specific paths
-            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
-              cd /var/www/vhosts/home.sproutify.app/httpdocs
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            # Use the correct path for home.sproutify.app subdomain
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
             elif [ -d ~/home.sproutify.app/httpdocs ]; then
               cd ~/home.sproutify.app/httpdocs
             else
@@ -128,7 +128,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /var/www/vhosts/home.sproutify.app/httpdocs/
+            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -138,11 +138,11 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            # Only use home.sproutify.app specific paths
-            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
-              cd /var/www/vhosts/home.sproutify.app/httpdocs
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            # Use the correct path for home.sproutify.app subdomain
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
             elif [ -d ~/home.sproutify.app/httpdocs ]; then
               cd ~/home.sproutify.app/httpdocs
             else
@@ -166,12 +166,12 @@ jobs:
             echo "Home directory: $(cd ~ && pwd)"
             echo ""
             echo "=== Looking for home.sproutify.app directory ==="
-            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
-              cd /var/www/vhosts/home.sproutify.app/httpdocs
-              echo "Using: /var/www/vhosts/home.sproutify.app/httpdocs ($(pwd))"
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
               echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ($(pwd))"
+            elif [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
+              echo "Using: /var/www/vhosts/home.sproutify.app/httpdocs ($(pwd))"
             elif [ -d ~/home.sproutify.app/httpdocs ]; then
               cd ~/home.sproutify.app/httpdocs
               echo "Using: ~/home.sproutify.app/httpdocs ($(pwd))"
