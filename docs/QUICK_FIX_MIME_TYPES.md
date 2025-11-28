@@ -43,12 +43,16 @@ location ~* \.svg$ {
 	try_files $uri =404;
 }
 
-# SPA routing: serve index.html for all routes
-location / {
+# Optional: Cache control for index.html
+location = /index.html {
 	root /var/www/vhosts/home.sproutify.app/httpdocs;
-	try_files $uri $uri/ /index.html;
+	add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+	add_header Pragma "no-cache" always;
+	add_header Expires 0 always;
 }
 ```
+
+**Important:** Do NOT include a `location /` block - Plesk already generates one automatically. If you need SPA routing, you'll need to modify Plesk's generated location block separately or use a different approach.
 
 **Note:** If your domain path is different, replace `/var/www/vhosts/home.sproutify.app/httpdocs` with your actual path. You can find it in Plesk under **Files** or check the **Document Root** setting.
 
