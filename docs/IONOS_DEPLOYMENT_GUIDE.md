@@ -387,6 +387,14 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.en
 - Check that the root path is correct
 - Ensure files are actually deployed (check verification step)
 
+### Issue: 404 for Routes (e.g., /community-signups)
+**Solution:**
+- This is a Single Page Application (SPA) routing issue
+- The `.htaccess` file includes rewrite rules to handle client-side routing
+- Ensure `.htaccess` is deployed to your `httpdocs` directory
+- If using nginx primarily, you may need to contact IONOS support to add `try_files $uri $uri/ /index.html;` to the default `location /` block in nginx
+- Alternatively, ensure Apache is processing requests (IONOS typically uses Apache behind nginx, so `.htaccess` should work)
+
 ### Issue: MIME Type Error (Empty MIME type)
 **Solution:**
 - Ensure Nginx configuration is saved in Plesk
