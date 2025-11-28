@@ -6,7 +6,7 @@ import {
   Search as SearchIcon,
   UserPlus,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -98,7 +98,7 @@ export function CommunitySignups() {
   const fetchSignups = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('community_signups')
         .select('*')
         .order('inserted_at', { ascending: false });
@@ -132,12 +132,14 @@ export function CommunitySignups() {
   const sortedSignups = useMemo(() => {
     const cloned = [...filteredSignups];
     cloned.sort((a, b) => {
-      let aValue = a[sort.field];
-      let bValue = b[sort.field];
+      let aValue: string | number = a[sort.field];
+      let bValue: string | number = b[sort.field];
 
       if (dateFields.includes(sort.field)) {
-        aValue = toDateValue(aValue as string | number | null | undefined);
-        bValue = toDateValue(bValue as string | number | null | undefined);
+        const aDateValue = toDateValue(aValue as string | number | null | undefined);
+        const bDateValue = toDateValue(bValue as string | number | null | undefined);
+        aValue = aDateValue;
+        bValue = bDateValue;
       } else {
         aValue = (aValue ?? '').toString().toLowerCase();
         bValue = (bValue ?? '').toString().toLowerCase();
