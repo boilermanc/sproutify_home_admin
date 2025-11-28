@@ -448,11 +448,11 @@ export function Dashboard() {
               <CardDescription>New user signups over the past week</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[320px] md:h-[360px]">
+              <div className="h-[320px] md:h-[360px] w-full min-w-0">
                 {activityLoading ? (
                   <div className="flex h-full items-center justify-center text-muted-foreground text-sm">Loading activity…</div>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={320}>
                     <AreaChart data={activityData}>
                       <defs>
                         <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
