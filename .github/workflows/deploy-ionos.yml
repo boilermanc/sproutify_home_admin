@@ -52,7 +52,7 @@ jobs:
             exit 1
           fi
 
-      - name: Find httpdocs path
+      - name: Find httpdocs path for home.sproutify.app
         id: find_path
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -61,28 +61,40 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            echo "Checking for httpdocs directory..."
+            echo "=== Looking for home.sproutify.app httpdocs directory ==="
             HTTPDOCS_PATH=""
-            if [ -d ~/httpdocs ]; then
-              HTTPDOCS_PATH=$(cd ~/httpdocs && pwd)
-              echo "Found: $HTTPDOCS_PATH"
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
-              HTTPDOCS_PATH=/var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
-              echo "Found: $HTTPDOCS_PATH"
-            elif [ -d /httpdocs ]; then
-              HTTPDOCS_PATH=/httpdocs
-              echo "Found: $HTTPDOCS_PATH"
+            
+            # First, check for home.sproutify.app specific paths
+            echo "Checking for home.sproutify.app specific directories..."
+            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              HTTPDOCS_PATH=/var/www/vhosts/home.sproutify.app/httpdocs
+              echo "✓ Found: $HTTPDOCS_PATH"
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+              HTTPDOCS_PATH=/var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
+              echo "✓ Found: $HTTPDOCS_PATH"
+            elif [ -d ~/home.sproutify.app/httpdocs ]; then
+              HTTPDOCS_PATH=$(cd ~/home.sproutify.app/httpdocs && pwd)
+              echo "✓ Found: $HTTPDOCS_PATH"
             else
-              echo "httpdocs not found. Checking common locations:"
-              ls -la ~/ 2>/dev/null || true
-              ls -la /var/www/vhosts/ 2>/dev/null || true
-              echo "Please check the correct path and update the workflow"
+              echo "⚠ home.sproutify.app specific path not found"
+              echo ""
+              echo "Checking available vhost directories:"
+              ls -la /var/www/vhosts/ 2>/dev/null | head -20 || echo "Cannot list /var/www/vhosts/"
+              echo ""
+              echo "Checking sweetwaterurbanfarms.com subdirectories:"
+              ls -la /var/www/vhosts/sweetwaterurbanfarms.com/ 2>/dev/null | head -20 || echo "Cannot list subdirectories"
+              echo ""
+              echo "ERROR: Could not find home.sproutify.app httpdocs directory!"
+              echo "Please verify the correct path in Plesk and update the workflow."
               exit 1
             fi
             echo "HTTPDOCS_PATH=$HTTPDOCS_PATH" >> $GITHUB_OUTPUT
-            echo "Using path: $HTTPDOCS_PATH"
+            echo ""
+            echo "=== Using path: $HTTPDOCS_PATH ==="
+            echo "Verifying this is the correct directory (should be empty or contain home.sproutify.app files):"
+            ls -la "$HTTPDOCS_PATH" | head -10
 
-      - name: Clean IONOS directory
+      - name: Clean IONOS directory (home.sproutify.app only)
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.IONOS_HOST }}
@@ -90,27 +102,25 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            # Try multiple possible paths
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            # Use the path found in previous step, or check for home.sproutify.app specific paths
+            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
-              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
-            elif [ -d ~/httpdocs ]; then
-              cd ~/httpdocs
-            elif [ -d /httpdocs ]; then
-              cd /httpdocs
+            elif [ -d ~/home.sproutify.app/httpdocs ]; then
+              cd ~/home.sproutify.app/httpdocs
             else
-              echo "ERROR: httpdocs directory not found"
-              echo "Checking available paths:"
-              ls -la /var/www/vhosts/sweetwaterurbanfarms.com/ 2>/dev/null || true
+              echo "ERROR: home.sproutify.app httpdocs directory not found!"
+              echo "This prevents accidentally overwriting the wrong site."
               exit 1
             fi
             echo "Cleaning directory: $(pwd)"
+            echo "⚠ WARNING: This will delete all files in this directory"
             rm -rf ./*
             rm -rf ./.* 2>/dev/null || true
             echo "Directory cleaned"
 
-      - name: Deploy to IONOS via SFTP
+      - name: Deploy to IONOS via SFTP (home.sproutify.app)
         uses: Dylan700/sftp-upload-action@v1.2.3
         with:
           server: ${{ secrets.IONOS_HOST }}
@@ -118,7 +128,7 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           uploads: |
-            ./dist/ => /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs/
+            ./dist/ => /var/www/vhosts/home.sproutify.app/httpdocs/
 
       - name: Set file permissions
         uses: appleboy/ssh-action@v1.2.0
@@ -128,16 +138,15 @@ jobs:
           password: ${{ secrets.IONOS_PASSWORD }}
           port: 2222
           script: |
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            # Only use home.sproutify.app specific paths
+            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
-              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
-            elif [ -d ~/httpdocs ]; then
-              cd ~/httpdocs
-            elif [ -d /httpdocs ]; then
-              cd /httpdocs
+            elif [ -d ~/home.sproutify.app/httpdocs ]; then
+              cd ~/home.sproutify.app/httpdocs
             else
-              echo "ERROR: httpdocs directory not found"
+              echo "ERROR: home.sproutify.app httpdocs directory not found!"
               exit 1
             fi
             echo "Setting permissions in: $(pwd)"
@@ -156,22 +165,21 @@ jobs:
           script: |
             echo "Home directory: $(cd ~ && pwd)"
             echo ""
-            if [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
+            echo "=== Looking for home.sproutify.app directory ==="
+            if [ -d /var/www/vhosts/home.sproutify.app/httpdocs ]; then
+              cd /var/www/vhosts/home.sproutify.app/httpdocs
+              echo "Using: /var/www/vhosts/home.sproutify.app/httpdocs ($(pwd))"
+            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ]; then
               cd /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs
               echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/home.sproutify.app/httpdocs ($(pwd))"
-            elif [ -d /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ]; then
-              cd /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs
-              echo "Using: /var/www/vhosts/sweetwaterurbanfarms.com/httpdocs ($(pwd))"
-            elif [ -d ~/httpdocs ]; then
-              cd ~/httpdocs
-              echo "Using: ~/httpdocs ($(pwd))"
-            elif [ -d /httpdocs ]; then
-              cd /httpdocs
-              echo "Using: /httpdocs ($(pwd))"
+            elif [ -d ~/home.sproutify.app/httpdocs ]; then
+              cd ~/home.sproutify.app/httpdocs
+              echo "Using: ~/home.sproutify.app/httpdocs ($(pwd))"
             else
-              echo "Error: httpdocs not found"
+              echo "ERROR: home.sproutify.app httpdocs not found"
               echo "Checking available paths:"
-              ls -la /var/www/vhosts/sweetwaterurbanfarms.com/ 2>/dev/null || true
+              echo "Listing /var/www/vhosts/:"
+              ls -la /var/www/vhosts/ 2>/dev/null | head -20 || true
               exit 1
             fi
             echo ""
