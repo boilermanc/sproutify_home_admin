@@ -30,3 +30,4 @@ USING (
 -- Run this query to check:
 -- SELECT * FROM pg_policies WHERE tablename = 'community_signups';
 
+

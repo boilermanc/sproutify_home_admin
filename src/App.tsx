@@ -9,6 +9,11 @@ import { Notifications } from './pages/Notifications';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
 import { CommunitySignups } from './pages/CommunitySignups';
+import { TrialConversions } from './pages/TrialConversions';
+import { Moderation } from './pages/Moderation';
+import { ProfanityFilter } from './pages/ProfanityFilter';
+import { GuidelinesManagement } from './pages/GuidelinesManagement';
+import { FeedManagement } from './pages/FeedManagement';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './contexts/authContextBase';
 import { TeamAdminProvider } from './contexts/TeamAdminContext';
@@ -104,6 +109,11 @@ function AuthGate() {
           <Route path="challenges" element={<Challenges />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="community-signups" element={<CommunitySignups />} />
+          <Route path="trial-conversions" element={<TrialConversions />} />
+          <Route path="moderation" element={<Moderation />} />
+          <Route path="profanity-filter" element={<ProfanityFilter />} />
+          <Route path="guidelines" element={<GuidelinesManagement />} />
+          <Route path="feed" element={<FeedManagement />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
